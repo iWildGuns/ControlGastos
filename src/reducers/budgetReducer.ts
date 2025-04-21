@@ -1,4 +1,4 @@
-import { DraftExpense, Expense } from "../types";
+import { Category, DraftExpense, Expense } from "../types";
 
 export type BudgetActions =
   | { type: "add-budget"; payload: { budget: number } }
@@ -7,13 +7,16 @@ export type BudgetActions =
   | { type: "add-expense"; payload: { expense: DraftExpense } }
   | { type: "remove-expense"; payload: { id: Expense["id"] } }
   | { type: "getExpenseById"; payload: { id: Expense["id"] } }
-  | { type: "updateExpense"; payload: { expense: Expense } };
+  | { type: "updateExpense"; payload: { expense: Expense } }
+  | { type: "resetApp" }
+  | { type: "addFilterCategory"; payload: { id: Category["id"] } };
 
 export type BudgetState = {
   budget: number;
   modal: boolean;
   expenses: Expense[];
   editingId: Expense["id"];
+  currentCategory: Category["id"];
 };
 
 const initialBudget = (): number => {
@@ -31,6 +34,7 @@ export const initialState: BudgetState = {
   modal: false,
   expenses: localStorageExpenses(),
   editingId: "",
+  currentCategory: "",
 };
 
 const createExpense = (DraftExpense: DraftExpense): Expense => {
@@ -103,6 +107,21 @@ export const budgetReducer = (
       ),
       modal: false,
       editingId: "",
+    };
+  }
+
+  if (action.type === "resetApp") {
+    return {
+      ...state,
+      budget: 0,
+      expenses: [],
+    };
+  }
+
+  if (action.type === "addFilterCategory") {
+    return {
+      ...state,
+      currentCategory: action.payload.id,
     };
   }
 

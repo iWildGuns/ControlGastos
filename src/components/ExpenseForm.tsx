@@ -1,11 +1,11 @@
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
-import { ChangeEvent, useEffect, useState } from "react";
-import { categories } from "../data/categories";
-import { useBudget } from "../hooks/useBudget";
 import DatePicker from "react-date-picker";
 import ErrorMessage from "./ErrorMessage";
 import type { DraftExpense, Value } from "../types";
+import { ChangeEvent, useEffect, useState } from "react";
+import { categories } from "../data/categories";
+import { useBudget } from "../hooks/useBudget";
 
 export default function ExpenseForm() {
   const [expense, setExpense] = useState<DraftExpense>({
@@ -16,8 +16,8 @@ export default function ExpenseForm() {
   });
 
   const [error, setError] = useState("");
-
-  const { dispatch, state } = useBudget();
+  const [previousAmount, setPreviousAmount] = useState(0);
+  const { dispatch, state, remainingBudget } = useBudget();
 
   useEffect(() => {
     if (state.editingId) {
@@ -25,6 +25,7 @@ export default function ExpenseForm() {
         (currentExpense) => currentExpense.id === state.editingId
       )[0];
       setExpense(editingExpense);
+      setPreviousAmount(editingExpense.amount);
     }
   }, [state.editingId, state.expenses]);
 
@@ -54,6 +55,13 @@ export default function ExpenseForm() {
       return;
     }
 
+    //validamos limite de presupuesto
+
+    if (expense.amount - previousAmount > remainingBudget) {
+      setError("Limite de presupuesto alcansado!");
+      return;
+    }
+
     if (state.editingId) {
       dispatch({
         type: "updateExpense",
@@ -64,11 +72,13 @@ export default function ExpenseForm() {
     }
 
     // setExpense({
-    //   expenseName: "",
-    //   amount: 0,
-    //   category: "",
-    //   date: new Date(),
+    // //   expenseName: "",
+    // //   amount: 0,
+    // //   category: "",
+    // //   date: new Date(),
     // });
+
+    setPreviousAmount(0);
   };
 
   return (
